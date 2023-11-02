@@ -30,13 +30,27 @@ func (l *Lexer) NextToken() token.Token {
 	switch l.ch {
 	// Operators
 	case '=':
-		tok = newToken(token.Assign, l.ch)
+		if l.peekChar() == '=' { // If the next character is also an equal sign
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch) // Concatenate the two characters
+			tok = token.Token{Type: token.Equal, Literal: literal}
+		} else {
+			tok = newToken(token.Assign, l.ch)
+		}
 	case '+':
 		tok = newToken(token.Plus, l.ch)
 	case '-':
 		tok = newToken(token.Minus, l.ch)
 	case '!':
-		tok = newToken(token.Bang, l.ch)
+		if l.peekChar() == '=' { // If the next character is also an equal sign
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch) // Concatenate the two characters
+			tok = token.Token{Type: token.NotEqual, Literal: literal}
+		} else {
+			tok = newToken(token.Bang, l.ch)
+		}
 	case '*':
 		tok = newToken(token.Asterisk, l.ch)
 	case '/':
