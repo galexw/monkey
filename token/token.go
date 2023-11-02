@@ -50,3 +50,25 @@ const (
 	Else     = "Else"
 	Return   = "Return"
 )
+
+// LookupIdent checks if the given identifier is a keyword and returns the corresponding TokenType.
+func LookupIdent(ident string) TokenType {
+	switch ident {
+	case "fn":
+		return Function
+	case "let":
+		return Let
+	case "true":
+		return True
+	case "false":
+		return False
+	case "if":
+		return If
+	case "else":
+		return Else
+	case "return":
+		return Return
+	default:
+		return Identifier
+	}
+}

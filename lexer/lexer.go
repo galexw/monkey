@@ -1,6 +1,8 @@
 package lexer
 
-import "galexw/monkey/token"
+import (
+	"galexw/monkey/token"
+)
 
 type Lexer struct {
 	input        string
@@ -22,6 +24,8 @@ func newToken(tokenType token.TokenType, ch byte) token.Token { // ch is the cha
 func (l *Lexer) NextToken() token.Token {
 	// TODO: Implement next token method
 	var tok token.Token
+
+	l.skipWhitespace()
 
 	switch l.ch {
 	// Operators
@@ -62,9 +66,58 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+	default:
+		if isLetter(l.ch) { // If the character is a letter
+			tok.Literal = l.readIdentifier()
+			tok.Type = token.LookupIdent(tok.Literal)
+			return tok
+		} else if isDigit(l.ch) { // If the character is a digit
+			tok.Type = token.Int
+			tok.Literal = l.readNumber()
+			return tok
+		} else {
+			tok = newToken(token.Illegal, l.ch) // If the character is not a letter or a digit
+		}
 	}
+
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' { // While the character is a whitespace
+		l.readChar()
+	}
+}
+
+// Helper functions
+func isLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
+		ch == '_' // Allow underscores in identifiers
+}
+
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+
+	for isLetter(l.ch) { // While the character is a letter
+		l.readChar()
+	}
+
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) readNumber() string {
+	position := l.position
+
+	for isDigit(l.ch) { // While the character is a digit
+		l.readChar()
+	}
+
+	return l.input[position:l.position]
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9' // If the character is a digit
 }
 
 func (l *Lexer) readChar() {
