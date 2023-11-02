@@ -63,6 +63,8 @@ func (l *Lexer) NextToken() token.Token {
 	// Delimiters
 	case ';':
 		tok = newToken(token.Semicolon, l.ch)
+	case ':':
+		tok = newToken(token.Colon, l.ch)
 	case '(':
 		tok = newToken(token.LeftParen, l.ch)
 	case ')':
@@ -77,6 +79,11 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LeftBracket, l.ch)
 	case ']':
 		tok = newToken(token.RightBracket, l.ch)
+
+	// string
+	case '"':
+		tok.Type = token.String
+		tok.Literal = l.readString()
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -138,6 +145,17 @@ func (l *Lexer) readChar() {
 	l.ch = l.peekChar()
 	l.position = l.nextPosition
 	l.nextPosition += 1
+}
+
+func (l *Lexer) readString() string {
+	position := l.position + 1 // +1 to skip the opening double quote
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 { // If the character is a double quote or EOF
+			break
+		}
+	}
+	return l.input[position:l.position]
 }
 
 func (l *Lexer) peekChar() byte {
