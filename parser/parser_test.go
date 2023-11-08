@@ -23,7 +23,6 @@ func TestLetStatements(t *testing.T) {
 		t.Fatalf("program.Statements does not contain 3 statements. Got %d", len(program.Statements))
 	}
 
-	// Test the first let statement
 	tests := []struct {
 		expectedIdentifier string
 	}{
@@ -41,27 +40,26 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
-// Helper function for TestLetStatements
+// Why's it not testing the actual expression value? I think its TBD
+// My guess is there's a bunch of expression types
+// In the sneak peek on pg 48 there's OperatorExpression, IntegerLiteral etc
 func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 	if s.TokenLiteral() != "let" {
 		t.Errorf("s.TokenLiteral() not 'let'. Got %q", s.TokenLiteral())
 		return false
 	}
 
-	// Type assertion
 	letStmt, ok := s.(*ast.LetStatement)
 	if !ok {
 		t.Errorf("s not *LetStatement. Got %T", s)
 		return false
 	}
 
-	// Test the identifier
 	if letStmt.Name.Value != name {
 		t.Errorf("letStmt.Name.Value not %s. Got %s", name, letStmt.Name.Value)
 		return false
 	}
 
-	// Test the identifier's token literal
 	if letStmt.Name.TokenLiteral() != name {
 		t.Errorf("letStmt.Name.TokenLiteral() not %s. Got %s", name, letStmt.Name.TokenLiteral())
 		return false
