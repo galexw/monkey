@@ -8,67 +8,67 @@ type Token struct {
 }
 
 const (
-	Illegal = "Illegal"
+	ILLEGAL = "Illegal"
 	EOF     = "EOF"
 
 	// Identifiers + Literals
-	Identifier = "Identifier" // add, x ,y, ...
-	Int        = "Int"        // 123456
-	String     = "String"     // "x", "y"
+	IDENTIFIER = "Identifier" // add, x ,y, ...
+	INT        = "Int"        // 123456
+	STRING     = "String"     // "x", "y"
 
 	// Operators
-	Assign   = "="
-	Plus     = "+"
-	Minus    = "-"
-	Bang     = "!"
-	Asterisk = "*"
-	Slash    = "/"
-	Equal    = "=="
-	NotEqual = "!="
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
+	EQUAL    = "=="
+	NOTEQUAL = "!="
 
-	LessThan    = "<"
-	GreaterThan = ">"
+	LESSTHAN    = "<"
+	GREATERTHAN = ">"
 
 	// Delimiters
-	Comma     = ","
-	Semicolon = ";"
-	Colon     = ":"
+	COMMA     = ","
+	SEMICOLON = ";"
+	COLON     = ":"
 
-	LeftParen    = "("
-	RightParen   = ")"
-	LeftBrace    = "{"
-	RightBrace   = "}"
-	LeftBracket  = "["
-	RightBracket = "]"
+	LEFTPAREN    = "("
+	RIGHTPAREN   = ")"
+	LEFTBRACE    = "{"
+	RIGHTBRACE   = "}"
+	LEFTBRACKET  = "["
+	RIGHTBRACKET = "]"
 
 	// Keywords
-	Function = "Function"
-	Let      = "Let"
-	True     = "True"
-	False    = "False"
-	If       = "If"
-	Else     = "Else"
-	Return   = "Return"
+	FUNCTION = "Function"
+	LET      = "Let"
+	TRUE     = "True"
+	FALSE    = "False"
+	IF       = "If"
+	ELSE     = "Else"
+	RETURN   = "Return"
 )
 
 // LookupIdent checks if the given identifier is a keyword and returns the corresponding TokenType.
 func LookupIdent(ident string) TokenType {
 	switch ident {
 	case "fn":
-		return Function
+		return FUNCTION
 	case "let":
-		return Let
+		return LET
 	case "true":
-		return True
+		return TRUE
 	case "false":
-		return False
+		return FALSE
 	case "if":
-		return If
+		return IF
 	case "else":
-		return Else
+		return ELSE
 	case "return":
-		return Return
+		return RETURN
 	default:
-		return Identifier
+		return IDENTIFIER
 	}
 }

@@ -22,82 +22,76 @@ func newToken(tokenType token.TokenType, ch byte) token.Token { // ch is the cha
 }
 
 func (l *Lexer) NextToken() token.Token {
-	// TODO: Implement next token method
 	var tok token.Token
 
 	l.skipWhitespace()
 
 	switch l.ch {
-	// Operators
 	case '=':
-		if l.peekChar() == '=' { // If the next character is also an equal sign
-			ch := l.ch
-			l.readChar()
-			literal := string(ch) + string(l.ch) // Concatenate the two characters
-			tok = token.Token{Type: token.Equal, Literal: literal}
+		if l.peekChar() == '=' {
+			ch := l.ch                           // Save the current character, which is '='
+			l.readChar()                         // Move to the next character
+			literal := string(ch) + string(l.ch) // Create a string "==" for the EQUAL token
+			tok = token.Token{Type: token.EQUAL, Literal: literal}
 		} else {
-			tok = newToken(token.Assign, l.ch)
+			tok = newToken(token.ASSIGN, l.ch)
 		}
 	case '+':
-		tok = newToken(token.Plus, l.ch)
+		tok = newToken(token.PLUS, l.ch)
 	case '-':
-		tok = newToken(token.Minus, l.ch)
+		tok = newToken(token.MINUS, l.ch)
 	case '!':
-		if l.peekChar() == '=' { // If the next character is also an equal sign
+		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			literal := string(ch) + string(l.ch) // Concatenate the two characters
-			tok = token.Token{Type: token.NotEqual, Literal: literal}
+			literal := string(ch) + string(l.ch) // Create a string "!=" for the NOTEQUAL token
+			tok = token.Token{Type: token.NOTEQUAL, Literal: literal}
 		} else {
-			tok = newToken(token.Bang, l.ch)
+			tok = newToken(token.BANG, l.ch)
 		}
 	case '*':
-		tok = newToken(token.Asterisk, l.ch)
+		tok = newToken(token.ASTERISK, l.ch)
 	case '/':
-		tok = newToken(token.Slash, l.ch)
+		tok = newToken(token.SLASH, l.ch)
 	case '<':
-		tok = newToken(token.LessThan, l.ch)
+		tok = newToken(token.LESSTHAN, l.ch)
 	case '>':
-		tok = newToken(token.GreaterThan, l.ch)
-
-	// Delimiters
+		tok = newToken(token.GREATERTHAN, l.ch)
 	case ';':
-		tok = newToken(token.Semicolon, l.ch)
+		tok = newToken(token.SEMICOLON, l.ch)
 	case ':':
-		tok = newToken(token.Colon, l.ch)
+		tok = newToken(token.COLON, l.ch)
 	case '(':
-		tok = newToken(token.LeftParen, l.ch)
+		tok = newToken(token.LEFTPAREN, l.ch)
 	case ')':
-		tok = newToken(token.RightParen, l.ch)
+		tok = newToken(token.RIGHTPAREN, l.ch)
 	case ',':
-		tok = newToken(token.Comma, l.ch)
+		tok = newToken(token.COMMA, l.ch)
 	case '{':
-		tok = newToken(token.LeftBrace, l.ch)
+		tok = newToken(token.LEFTBRACE, l.ch)
 	case '}':
-		tok = newToken(token.RightBrace, l.ch)
+		tok = newToken(token.RIGHTBRACE, l.ch)
 	case '[':
-		tok = newToken(token.LeftBracket, l.ch)
+		tok = newToken(token.LEFTBRACKET, l.ch)
 	case ']':
-		tok = newToken(token.RightBracket, l.ch)
-
-	// string
+		tok = newToken(token.RIGHTBRACKET, l.ch)
 	case '"':
-		tok.Type = token.String
+		tok.Type = token.STRING
 		tok.Literal = l.readString()
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(l.ch) { // If the character is a letter
+		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
-		} else if isDigit(l.ch) { // If the character is a digit
-			tok.Type = token.Int
+		} else if isDigit(l.ch) {
+			tok.Type = token.INT
 			tok.Literal = l.readNumber()
 			return tok
 		} else {
-			tok = newToken(token.Illegal, l.ch) // If the character is not a letter or a digit
+			tok = newToken(token.ILLEGAL, l.ch)
 		}
 	}
 
