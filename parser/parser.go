@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"galexw/monkey/ast"
 	"galexw/monkey/lexer"
 	"galexw/monkey/token"
@@ -32,7 +33,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}
 
-	for p.curToken.Type != token.ILLEGAL {
+	for p.curToken.Type != token.EOF {
 		stmt := p.parseStatement()
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
@@ -52,7 +53,49 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseLetStatement() ast.Statement {
-	// TODO: Implement parsing Let statement
-	return nil
+func (p *Parser) parseLetStatement() *ast.LetStatement {
+	letToken := p.curToken
+
+	if !p.expectPeek(token.IDENTIFIER) {
+		return nil
+	}
+
+	identifierPtr := &ast.Identifier{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
+	}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	// TODO: Implement parsing expression
+
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return &ast.LetStatement{
+		Token: letToken,
+		Name:  identifierPtr,
+		Value: nil,
+	}
+}
+
+func (p *Parser) curTokenIs(t token.TokenType) bool {
+	return p.curToken.Type == t
+}
+
+func (p *Parser) peekTokenIs(t token.TokenType) bool {
+	return p.peekToken.Type == t
+}
+
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	} else {
+		fmt.Printf("Expected token %s, got %s\n", t, p.peekToken.Type)
+		return false
+	}
 }
