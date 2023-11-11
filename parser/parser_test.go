@@ -38,6 +38,33 @@ func TestLetStatements(t *testing.T) {
 			return
 		}
 	}
+	checkParserErrors(t, p)
+}
+
+func TestFailLetStatements(t *testing.T) {
+	input := `
+	let x 5;
+	let = 10;
+	let 838383;
+	`
+	l := lexer.New(input)
+	p := New(l)
+
+	p.ParseProgram()
+	if len(p.Errors()) != 3 {
+		t.Fatalf("ParseProgram() should have returned errors")
+	}
+}
+
+func checkParserErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+	t.Fatalf("parser has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Fatalf("parser error: %q", msg)
+	}
 }
 
 // Why's it not testing the actual expression value? I think its TBD
