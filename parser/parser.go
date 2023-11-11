@@ -11,6 +11,7 @@ type Parser struct {
 	lexer     *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -22,6 +23,10 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
 }
 
 func (p *Parser) nextToken() {
@@ -95,7 +100,11 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
-		fmt.Printf("Expected token %s, got %s\n", t, p.peekToken.Type)
+		p.peekError(t)
 		return false
 	}
+}
+
+func (p *Parser) peekError(expectedTokenType token.TokenType) {
+	p.errors = append(p.errors, fmt.Sprintf("Expected token %s, got %s", expectedTokenType, p.peekToken.Type))
 }
