@@ -7,11 +7,22 @@ import (
 	"galexw/monkey/token"
 )
 
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func(ast.Expression) ast.Expression
+)
+
 type Parser struct {
 	lexer     *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
 	errors    []string
+
+	// As of now - I do not understand what's the point of these maps of token
+	// types to functions. I'll probably understand it when I get to the
+	// expression parsing part.
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -100,6 +111,14 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 		Token:       returnToken,
 		ReturnValue: nil, // TODO: Parse return expression
 	}
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
