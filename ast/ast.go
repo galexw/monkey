@@ -1,9 +1,13 @@
 package ast
 
-import "galexw/monkey/token"
+import (
+	"bytes"
+	"galexw/monkey/token"
+)
 
 type Node interface {
 	TokenLiteral() string
+	String() string
 }
 
 type Statement interface {
@@ -30,6 +34,14 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+func (p *Program) String() string {
+	var out bytes.Buffer
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
 type LetStatement struct {
 	Token token.Token
 	Name  *Identifier
@@ -38,6 +50,17 @@ type LetStatement struct {
 
 func (ls *LetStatement) statementNode()       {}
 func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
+func (ls *LetStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(ls.TokenLiteral() + " ")
+	out.WriteString(ls.Name.String())
+	out.WriteString(" = ")
+	if ls.Value != nil { // To remove later when we have expressions
+		out.WriteString(ls.Value.String())
+	}
+	out.WriteString(";")
+	return out.String()
+}
 
 type Identifier struct {
 	Token token.Token
@@ -46,6 +69,7 @@ type Identifier struct {
 
 func (i *Identifier) expressionNode()      {}
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
+func (i *Identifier) String() string       { return i.Value }
 
 type ReturnStatement struct {
 	Token       token.Token
@@ -54,6 +78,17 @@ type ReturnStatement struct {
 
 func (i *ReturnStatement) statementNode()       {}
 func (i *ReturnStatement) TokenLiteral() string { return i.Token.Literal }
+func (i *ReturnStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(i.TokenLiteral() + " ")
+
+	if i.ReturnValue != nil { // To remove later when we have expressions
+		out.WriteString(i.ReturnValue.String())
+	}
+
+	out.WriteString(";")
+	return out.String()
+}
 
 type ExpressionStatement struct {
 	Token      token.Token
@@ -62,3 +97,9 @@ type ExpressionStatement struct {
 
 func (i *ExpressionStatement) statementNode()       {}
 func (i *ExpressionStatement) TokenLiteral() string { return i.Token.Literal }
+func (i *ExpressionStatement) String() string {
+	if i.Expression != nil {
+		return i.Expression.String()
+	}
+	return ""
+}
