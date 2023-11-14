@@ -5,6 +5,7 @@ import (
 	"galexw/monkey/ast"
 	"galexw/monkey/lexer"
 	"galexw/monkey/token"
+	"strconv"
 )
 
 type (
@@ -45,7 +46,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+
+	// I don't understand why identifiers and integer literals are using
+	// prefix parse functions at the moment
 	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 
 	return p
 }
@@ -118,6 +123,20 @@ func (p *Parser) parseIdentifier() ast.Expression {
 		Token: p.curToken,
 		Value: p.curToken.Literal,
 	}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	itl := &ast.IntegerLiteral{Token: p.curToken}
+
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	itl.Value = value
+	return itl
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
