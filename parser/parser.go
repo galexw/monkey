@@ -12,6 +12,17 @@ type (
 	infixParseFn  func(ast.Expression) ast.Expression
 )
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // > or <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X or !X
+	CALL        // myFunction(X)
+)
+
 type Parser struct {
 	lexer     *lexer.Lexer
 	curToken  token.Token
@@ -32,6 +43,9 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.nextToken()
 	p.nextToken()
+
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
 
 	return p
 }
@@ -67,7 +81,42 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
+		return p.parseExpressionStatement()
+	}
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	expressionStatement := &ast.ExpressionStatement{
+		Token:      p.curToken,
+		Expression: nil,
+	}
+
+	// Still trying to understand what's LOWEST
+	// "That's going to make more sense in a short while, I promise"
+	expressionStatement.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return expressionStatement
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
 		return nil
+	}
+
+	leftExpression := prefix()
+
+	return leftExpression
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
 	}
 }
 
