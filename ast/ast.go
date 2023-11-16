@@ -80,6 +80,24 @@ func (i *IntegerLiteral) expressionNode()      {}
 func (i *IntegerLiteral) TokenLiteral() string { return i.Token.Literal }
 func (i *IntegerLiteral) String() string       { return i.Token.Literal }
 
+// <prefix><expression>
+type PrefixExpression struct {
+	Token           token.Token
+	Operator        string
+	RightExpression Expression
+}
+
+func (p *PrefixExpression) expressionNode()      {}
+func (p *PrefixExpression) TokenLiteral() string { return p.Token.Literal }
+func (p *PrefixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(p.Operator)
+	out.WriteString(p.RightExpression.String())
+	out.WriteString(")")
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression
