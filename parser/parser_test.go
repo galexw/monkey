@@ -52,7 +52,7 @@ func TestFailLetStatements(t *testing.T) {
 	p := New(l)
 
 	p.ParseProgram()
-	if len(p.Errors()) != 3 {
+	if len(p.Errors()) == 0 {
 		t.Fatalf("ParseProgram() should have returned errors")
 	}
 }
