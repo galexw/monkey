@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"galexw/monkey/ast"
 	"galexw/monkey/lexer"
 	"testing"
@@ -143,6 +144,47 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	}
 }
 
+func TestPrefixExpression(t *testing.T) {
+	prefixTests := []struct {
+		input    string
+		operator string
+		value    int64
+	}{
+		{"!5;", "!", 5},
+		{"-15;", "-", 15},
+	}
+
+	for _, tt := range prefixTests {
+		l := lexer.New(tt.input)
+		p := New(l)
+
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement. Got %d", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement) // Checking the program statement is an expression statement
+		if !ok {
+			t.Fatalf("program.Statements[0] is not an ast.ExpressionStatement. Got %T", program.Statements[0])
+		}
+
+		ident, ok := stmt.Expression.(*ast.PrefixExpression) // Checking the expression is an identifier
+		if !ok {
+			t.Fatalf("stmt.Expression is not an ast.PrefixExpression. Got %T", stmt.Expression)
+		}
+
+		if ident.Operator != tt.operator { // Checking the identifier value is 5
+			t.Errorf("ident.Operator not %s. Got %s", tt.operator, ident.Operator)
+		}
+
+		if !testIntegerLiteral(t, ident.RightExpression, tt.value) {
+			return
+		}
+	}
+}
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {
@@ -176,6 +218,26 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 
 	if letStmt.Name.TokenLiteral() != name {
 		t.Errorf("letStmt.Name.TokenLiteral() not %s. Got %s", name, letStmt.Name.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
+func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+	intLit, ok := il.(*ast.IntegerLiteral)
+	if !ok {
+		t.Errorf("il not *IntegerLiteral. Got %T", il)
+		return false
+	}
+
+	if intLit.Value != value {
+		t.Errorf("intLit.Value not %d. Got %d", value, intLit.Value)
+		return false
+	}
+
+	if intLit.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Errorf("intLit.TokenLiteral() not %s. Got %s", fmt.Sprintf("%d", value), intLit.TokenLiteral())
 		return false
 	}
 
