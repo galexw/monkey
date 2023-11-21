@@ -37,6 +37,17 @@ type Parser struct {
 	infixParseFns  map[token.TokenType]infixParseFn
 }
 
+var precedences = map[token.TokenType]int{
+	token.EQUAL:       EQUALS,
+	token.NOTEQUAL:    EQUALS,
+	token.LESSTHAN:    LESSGREATER,
+	token.GREATERTHAN: LESSGREATER,
+	token.PLUS:        SUM,
+	token.MINUS:       SUM,
+	token.SLASH:       PRODUCT,
+	token.ASTERISK:    PRODUCT,
+}
+
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		lexer: l,
@@ -53,6 +64,16 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.SLASH, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.EQUAL, p.parseInfixExpression)
+	p.registerInfix(token.NOTEQUAL, p.parseInfixExpression)
+	p.registerInfix(token.LESSTHAN, p.parseInfixExpression)
+	p.registerInfix(token.GREATERTHAN, p.parseInfixExpression)
 
 	return p
 }
@@ -118,6 +139,18 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	leftExpression := prefix()
 
+	// I do not understand this code at the moment - What is going on?
+	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExpression
+		}
+
+		p.nextToken()
+
+		leftExpression = infix(leftExpression) // This is where the magic happens
+	}
+
 	return leftExpression
 }
 
@@ -154,6 +187,24 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	pe.RightExpression = p.parseExpression(PREFIX)
 
 	return pe
+}
+
+func (p *Parser) parseInfixExpression(leftExpression ast.Expression) ast.Expression {
+	// We first parse the left expression, now we would be on the infix operator,
+	// so we move to the next token, and then parse the right expression
+	ie := &ast.InfixExpression{
+		Token:          p.curToken,
+		Operator:       p.curToken.Literal,
+		LeftExpression: leftExpression,
+	}
+
+	precedence := p.curPrecedence()
+
+	p.nextToken()
+
+	ie.RightExpression = p.parseExpression(precedence)
+
+	return ie
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
@@ -222,6 +273,20 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.peekError(t)
 		return false
 	}
+}
+
+func (p *Parser) curPrecedence() int {
+	if precedence, ok := precedences[p.curToken.Type]; ok {
+		return precedence
+	}
+	return LOWEST
+}
+
+func (p *Parser) peekPrecedence() int {
+	if precedence, ok := precedences[p.peekToken.Type]; ok {
+		return precedence
+	}
+	return LOWEST
 }
 
 func (p *Parser) peekError(expectedTokenType token.TokenType) {
