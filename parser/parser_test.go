@@ -130,17 +130,57 @@ func TestIntegerLiteralExpression(t *testing.T) {
 		t.Fatalf("program.Statements[0] is not an ast.ExpressionStatement. Got %T", program.Statements[0])
 	}
 
-	ident, ok := stmt.Expression.(*ast.IntegerLiteral) // Checking the expression is an identifier
+	il, ok := stmt.Expression.(*ast.IntegerLiteral) // Checking the expression is an integer literal
 	if !ok {
 		t.Fatalf("stmt.Expression is not an ast.IntegerLiteral. Got %T", stmt.Expression)
 	}
 
-	if ident.Value != 5 { // Checking the identifier value is 5
-		t.Errorf("ident.Value not %d. Got %d", 5, ident.Value)
+	if il.Value != 5 { // Checking the identifier value is 5
+		t.Errorf("il.Value not %d. Got %d", 5, il.Value)
 	}
 
-	if ident.TokenLiteral() != "5" { // Checking the identifier token literal is "5"
-		t.Errorf("ident.TokenLiteral() not %s. Got %s", "5", ident.TokenLiteral())
+	if il.TokenLiteral() != "5" { // Checking the identifier token literal is "5"
+		t.Errorf("il.TokenLiteral() not %s. Got %s", "5", il.TokenLiteral())
+	}
+}
+
+func TestBooleanExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"true;", true},
+		{"false;", false},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement. Got %d", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement) // Checking the program statement is an expression statement
+		if !ok {
+			t.Fatalf("program.Statements[0] is not an ast.ExpressionStatement. Got %T", program.Statements[0])
+		}
+
+		boolean, ok := stmt.Expression.(*ast.Boolean) // Checking the expression is an identifier
+		if !ok {
+			t.Fatalf("stmt.Expression is not an ast.Boolean. Got %T", stmt.Expression)
+		}
+
+		if boolean.Value != tt.expected { // Checking the identifier value is "foobar"
+			t.Errorf("boolean.Value not %t. Got %t", tt.expected, boolean.Value)
+		}
+
+		if boolean.TokenLiteral() != fmt.Sprintf("%t", tt.expected) { // Checking the identifier token literal is "foobar"
+			t.Errorf("boolean.TokenLiteral() not %s. Got %s", fmt.Sprintf("%t", tt.expected), boolean.TokenLiteral())
+		}
 	}
 }
 
@@ -254,6 +294,10 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
 		{"5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"},
 		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+		{"true", "true"},
+		{"false", "false"},
+		{"3 > 5 == false", "((3 > 5) == false)"},
+		{"3 < 5 == true", "((3 < 5) == true)"},
 	}
 
 	for _, tt := range tests {
