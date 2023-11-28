@@ -130,8 +130,8 @@ func (i *InfixExpression) String() string {
 type IfExpression struct {
 	Token       token.Token
 	Condition   Expression // A condition is an expression that produces a boolean value
-	Consequence *BlockStatement
-	Alternative *BlockStatement
+	Consequence *Block
+	Alternative *Block
 }
 
 func (i *IfExpression) expressionNode()      {}
@@ -149,14 +149,14 @@ func (i *IfExpression) String() string {
 	return out.String()
 }
 
-type BlockStatement struct {
+type Block struct {
 	Token      token.Token // The { token
 	Statements []Statement
 }
 
-func (i *BlockStatement) statementNode()       {}
-func (i *BlockStatement) TokenLiteral() string { return i.Token.Literal }
-func (i *BlockStatement) String() string {
+func (i *Block) statementNode()       {}
+func (i *Block) TokenLiteral() string { return i.Token.Literal }
+func (i *Block) String() string {
 	var out bytes.Buffer
 	for _, s := range i.Statements {
 		out.WriteString(s.String())
