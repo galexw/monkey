@@ -67,6 +67,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LEFTPAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.IF, p.parseIfExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -96,9 +97,10 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.curToken.Type != token.EOF {
 		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
+		program.Statements = append(program.Statements, stmt)
+
+		// Need to organize where to end a statement
+		// Some statements end with a semicolon, some don't
 		p.nextToken()
 	}
 
@@ -155,6 +157,62 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	return leftExpression
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	ifExpression := &ast.IfExpression{
+		Token: p.curToken,
+	}
+
+	// Parsing condition
+	if !p.expectPeek(token.LEFTPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+	condition := p.parseExpression(LOWEST)
+	ifExpression.Condition = condition
+
+	if !p.expectPeek(token.RIGHTPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LEFTBRACE) {
+		return nil
+	}
+
+	consequenceBlock := p.parseBlock()
+	ifExpression.Consequence = consequenceBlock
+
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(token.LEFTBRACE) {
+			return nil
+		}
+
+		alternativeBlock := p.parseBlock()
+		ifExpression.Alternative = alternativeBlock
+	}
+
+	return ifExpression
+}
+
+func (p *Parser) parseBlock() *ast.Block {
+	block := &ast.Block{
+		Token: p.curToken,
+	}
+	block.Statements = []ast.Statement{}
+
+	p.nextToken()
+
+	for !p.curTokenIs(token.RIGHTBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		block.Statements = append(block.Statements, stmt)
+		p.nextToken()
+	}
+
+	return block
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
