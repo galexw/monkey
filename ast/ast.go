@@ -164,6 +164,29 @@ func (i *Block) String() string {
 	return out.String()
 }
 
+type FunctionLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *Block
+}
+
+func (fe *FunctionLiteral) expressionNode()      {}
+func (fe *FunctionLiteral) TokenLiteral() string { return fe.Token.Literal }
+func (fe *FunctionLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("fn")
+	out.WriteString("(")
+	for i, p := range fe.Parameters {
+		if i != 0 {
+			out.WriteString(", ")
+		}
+		out.WriteString(p.String())
+	}
+	out.WriteString(")")
+	out.WriteString(fe.Body.String())
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression
