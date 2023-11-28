@@ -127,6 +127,43 @@ func (i *InfixExpression) String() string {
 	return out.String()
 }
 
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expression // A condition is an expression that produces a boolean value
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (i *IfExpression) expressionNode()      {}
+func (i *IfExpression) TokenLiteral() string { return i.Token.Literal }
+func (i *IfExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("if")
+	out.WriteString(i.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(i.Consequence.String())
+	if i.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(i.Alternative.String())
+	}
+	return out.String()
+}
+
+type BlockStatement struct {
+	Token      token.Token // The { token
+	Statements []Statement
+}
+
+func (i *BlockStatement) statementNode()       {}
+func (i *BlockStatement) TokenLiteral() string { return i.Token.Literal }
+func (i *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, s := range i.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression
