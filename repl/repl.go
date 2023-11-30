@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"galexw/monkey/lexer"
-	"galexw/monkey/token"
+	"galexw/monkey/parser"
 	"io"
 )
 
@@ -22,9 +22,23 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		lexer := lexer.New(line)
+		parser := parser.New(lexer)
 
-		for tok := lexer.NextToken(); tok.Type != token.EOF; tok = lexer.NextToken() {
-			fmt.Fprintf(out, "%+v\n", tok)
+		program := parser.ParseProgram()
+
+		if len(parser.Errors()) != 0 {
+			printParserErrors(out, parser.Errors())
+			continue
 		}
+
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
+	}
+}
+
+// printParserErrors prints out the parser errors
+func printParserErrors(out io.Writer, errors []string) {
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
