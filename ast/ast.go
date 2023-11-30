@@ -182,8 +182,9 @@ func (fe *FunctionLiteral) String() string {
 		}
 		out.WriteString(p.String())
 	}
-	out.WriteString(")")
+	out.WriteString(") {")
 	out.WriteString(fe.Body.String())
+	out.WriteString("}")
 	return out.String()
 }
 
@@ -214,10 +215,7 @@ type ExpressionStatement struct {
 func (i *ExpressionStatement) statementNode()       {}
 func (i *ExpressionStatement) TokenLiteral() string { return i.Token.Literal }
 func (i *ExpressionStatement) String() string {
-	if i.Expression != nil {
-		return i.Expression.String()
-	}
-	return ""
+	return i.Expression.String() + ";"
 }
 
 type CallExpression struct {
