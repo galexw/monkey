@@ -219,3 +219,25 @@ func (i *ExpressionStatement) String() string {
 	}
 	return ""
 }
+
+type CallExpression struct {
+	Token     token.Token
+	Function  Expression // Identifier or FunctionLiteral
+	Arguments []Expression
+}
+
+func (i *CallExpression) expressionNode()      {}
+func (i *CallExpression) TokenLiteral() string { return i.Token.Literal }
+func (i *CallExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(i.Function.String())
+	out.WriteString("(")
+	for i, p := range i.Arguments {
+		if i != 0 {
+			out.WriteString(", ")
+		}
+		out.WriteString(p.String())
+	}
+	out.WriteString(")")
+	return out.String()
+}
