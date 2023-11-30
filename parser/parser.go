@@ -294,32 +294,34 @@ func (p *Parser) parseInfixExpression(leftExpression ast.Expression) ast.Express
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
-	letToken := p.curToken
+	letStatement := &ast.LetStatement{
+		Token: p.curToken,
+	}
 
 	if !p.expectPeek(token.IDENTIFIER) {
 		return nil
 	}
 
-	identifierPtr := &ast.Identifier{
+	identifier := &ast.Identifier{
 		Token: p.curToken,
 		Value: p.curToken.Literal,
 	}
+
+	letStatement.Name = identifier
 
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
 
-	// TODO: Implement parsing expression
+	p.nextToken()
+	expression := p.parseExpression(LOWEST)
+	letStatement.Value = expression
 
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
-	return &ast.LetStatement{
-		Token: letToken,
-		Name:  identifierPtr,
-		Value: nil,
-	}
+	return letStatement
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
