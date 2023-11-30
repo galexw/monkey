@@ -325,16 +325,19 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
-	returnToken := p.curToken
-
-	for !p.curTokenIs(token.SEMICOLON) {
-		p.nextToken()
+	returnStatement := &ast.ReturnStatement{
+		Token: p.curToken,
 	}
 
-	return &ast.ReturnStatement{
-		Token:       returnToken,
-		ReturnValue: nil, // TODO: Parse return expression
+	p.nextToken()
+
+	returnStatement.ReturnValue = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
 	}
+
+	return returnStatement
 }
 
 func (p *Parser) parseFunctionLiteral() ast.Expression {
