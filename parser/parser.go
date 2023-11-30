@@ -46,6 +46,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:       SUM,
 	token.SLASH:       PRODUCT,
 	token.ASTERISK:    PRODUCT,
+	token.LEFTPAREN:   CALL,
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -79,6 +80,9 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOTEQUAL, p.parseInfixExpression)
 	p.registerInfix(token.LESSTHAN, p.parseInfixExpression)
 	p.registerInfix(token.GREATERTHAN, p.parseInfixExpression)
+
+	// This is really cool
+	p.registerInfix(token.LEFTPAREN, p.parseCallExpression)
 
 	return p
 }
@@ -145,7 +149,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	leftExpression := prefix()
 
-	// I do not understand this code at the moment - What is going on?
+	// Can visualize this as if the operator on the right is stronger,
+	// it will absorb the left expression into the right side
 	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
@@ -385,6 +390,40 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	}
 
 	return identifiers
+}
+
+func (p *Parser) parseCallExpression(leftExpression ast.Expression) ast.Expression {
+	return &ast.CallExpression{
+		Token:     p.curToken,
+		Function:  leftExpression, // This is the identifier for the function
+		Arguments: p.parseCallArguments(),
+	}
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	arguments := []ast.Expression{}
+
+	if p.peekTokenIs(token.RIGHTPAREN) {
+		p.nextToken()
+		return arguments
+	}
+
+	p.nextToken()
+
+	arguments = append(arguments, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+
+		arguments = append(arguments, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RIGHTPAREN) {
+		return nil
+	}
+
+	return arguments
 }
 
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
