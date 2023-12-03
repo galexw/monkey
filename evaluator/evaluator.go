@@ -87,16 +87,13 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-		// This is the case where both sides of the infix expression are integers
 		return evalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
-		// This is the case where we are comparing two objects
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
-		// This is the case where we are comparing two objects
 		return nativeBoolToBooleanObject(left != right)
 	default:
-		return NULL // Temporary
+		return NULL
 	}
 }
 
@@ -113,6 +110,14 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "<":
+		return nativeBoolToBooleanObject(leftVal < rightVal)
+	case ">":
+		return nativeBoolToBooleanObject(leftVal > rightVal)
+	case "==":
+		return nativeBoolToBooleanObject(leftVal == rightVal)
+	case "!=":
+		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
 		return NULL
 	}
